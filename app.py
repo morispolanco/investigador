@@ -23,17 +23,17 @@ def realizar_investigacion(tema):
     else:
         return None
 
-def formatear_resultado_html(resultado):
+def formatear_resultado_txt(resultado):
     if 'outputs' in resultado and 'research_result' in resultado['outputs']:
         contenido = resultado['outputs']['research_result']
-        html = f"""
-        <div style="background-color: #f0f0f0; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #333;">Resultado de la Investigación</h2>
-            <p style="color: #666;">{contenido}</p>
-        </div>
-        """
-        return html
-    return "<p>No se pudo obtener un resultado formateado.</p>"
+        txt = f"""
+Resultado de la Investigación
+=============================
+
+{contenido}
+"""
+        return txt
+    return "No se pudo obtener un resultado formateado."
 
 st.set_page_config(page_title="Agente Investigador", layout="wide")
 
@@ -48,12 +48,20 @@ if st.button("Investigar"):
         
         if resultado:
             st.success("Investigación completada")
-            html_resultado = formatear_resultado_html(resultado)
-            st.components.v1.html(html_resultado, height=400, scrolling=True)
+            txt_resultado = formatear_resultado_txt(resultado)
+            st.text_area("Resultado de la investigación:", value=txt_resultado, height=400)
+            
+            # Opción para descargar el resultado como archivo .txt
+            st.download_button(
+                label="Descargar resultado como .txt",
+                data=txt_resultado,
+                file_name="resultado_investigacion.txt",
+                mime="text/plain"
+            )
         else:
             st.error("Hubo un error al realizar la investigación. Por favor, intente nuevamente.")
     else:
         st.warning("Por favor, ingrese un tema para investigar.")
 
 st.sidebar.header("Acerca de")
-st.sidebar.info("Esta aplicación utiliza la API de Respell.ai para realizar investigaciones sobre temas específicos y presenta los resultados en español.")
+st.sidebar.info("Esta aplicación utiliza la API de Respell.ai para realizar investigaciones sobre temas específicos y presenta los resultados en español en formato de texto plano.")
