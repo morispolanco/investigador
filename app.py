@@ -17,23 +17,12 @@ def realizar_investigacion(tema):
         }
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, data=json.dumps(data))
     if response.status_code == 200:
-        return response.json()
+        return response.json()['choices'][0]['message']['content']
     else:
-        return None
+        return f"Error en la solicitud: {response.status_code}"
 
-def formatear_resultado_txt(resultado):
-    if 'outputs' in resultado and 'research_result' in resultado['outputs']:
-        contenido = resultado['outputs']['research_result']
-        txt = f"""
-Resultado de la Investigación
-=============================
-
-{contenido}
-"""
-        return txt
-    return "No se pudo obtener un resultado formateado."
 
 st.set_page_config(page_title="Agente Investigador", layout="wide")
 
