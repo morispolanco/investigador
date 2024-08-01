@@ -2,9 +2,6 @@ import streamlit as st
 import requests
 import json
 
-# Leer la API key desde los secretos
-api_key = st.secrets["api"]["key"]
-
 # Título de la aplicación
 st.title("Agente Investigador")
 
@@ -21,7 +18,7 @@ if st.button("Buscar"):
         url = 'https://v2-api.respell.ai/spells/start'
         headers = {
             'Accept': 'application/json',
-            'x-api-key': api_key,
+            'x-api-key': 'clxf3u99q003qweu1gn4o8321',
             'Content-Type': 'application/json'
         }
         data = {
