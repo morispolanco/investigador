@@ -1,56 +1,77 @@
 import streamlit as st
 import requests
 import json
+from apscheduler.schedulers.background import BackgroundScheduler
 
-def realizar_investigacion(tema):
+# Configuración de la página
+st.set_page_config(page_title="Agente Investigador", page_icon="🔍")
+
+# Título de la aplicación
+st.title("Agente Investigador")
+
+# Obtener la API key de los secretos de Streamlit
+api_key = st.secrets["api"]["key"]
+
+# Función para hacer la solicitud a la API
+def consultar_api(research_topic):
     url = 'https://v2-api.respell.ai/spells/start'
     headers = {
         'Accept': 'application/json',
-        'x-api-key': 'clxf3u99q003qweu1gn4o8321',
+        'x-api-key': api_key,
         'Content-Type': 'application/json'
     }
     data = {
         "spellId": "clzbq6xio01gwvv0ih1vejqb4",
         "wait": "true",
         "inputs": {
-            "research_topic": f"Investiga sobre '{tema}' y proporciona un resumen detallado en español."
+            "research_topic": research_topic
         }
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
     if response.status_code == 200:
-        return response.json()['choices'][0]['message']['content']
+        return response.json()
     else:
         return f"Error en la solicitud: {response.status_code}"
 
+# Área de entrada de texto para el tema de investigación del usuario
+research_topic = st.text_area("Escribe tu tema de investigación:", height=100)
 
-st.set_page_config(page_title="Agente Investigador", layout="wide")
-
-st.title("Agente Investigador")
-
-tema_investigacion = st.text_input("Ingrese el tema que desea investigar:")
-
-if st.button("Investigar"):
-    if tema_investigacion:
-        with st.spinner("Investigando..."):
-            resultado = realizar_investigacion(tema_investigacion)
-        
-        if resultado:
-            st.success("Investigación completada")
-            txt_resultado = formatear_resultado_txt(resultado)
-            st.text_area("Resultado de la investigación:", value=txt_resultado, height=400)
-            
-            # Opción para descargar el resultado como archivo .txt
-            st.download_button(
-                label="Descargar resultado como .txt",
-                data=txt_resultado,
-                file_name="resultado_investigacion.txt",
-                mime="text/plain"
-            )
-        else:
-            st.error("Hubo un error al realizar la investigación. Por favor, intente nuevamente.")
+# Botón para enviar la consulta
+if st.button("Consultar"):
+    if research_topic:
+        with st.spinner("Consultando al agente..."):
+            respuesta = consultar_api(research_topic)
+        st.subheader("Resultados de la Investigación:")
+        st.json(respuesta)
     else:
-        st.warning("Por favor, ingrese un tema para investigar.")
+        st.warning("Por favor, escribe un tema de investigación antes de consultar.")
 
-st.sidebar.header("Acerca de")
-st.sidebar.info("Esta aplicación utiliza la API de Respell.ai para realizar investigaciones sobre temas específicos y presenta los resultados en español en formato de texto plano.")
+# Información adicional
+st.sidebar.header("Acerca de esta aplicación")
+st.sidebar.write("""
+Esta aplicación utiliza un modelo avanzado para investigar y proporcionar información relevante sobre un tema dado. 
+Simplemente ingresa tu tema de investigación y obtendrás respuestas detalladas.
+
+Puedes investigar sobre:
+- Ciencia
+- Tecnología
+- Historia
+- Cultura
+- Y mucho más...
+
+¡No dudes en explorar cualquier tema de tu interés!
+""")
+
+# Pie de página
+st.sidebar.markdown("---")
+st.sidebar.markdown("Desarrollado con ❤️ para curiosos e investigadores")
+
+# Función para mantener la app activa
+def keep_alive():
+    print("App still alive!")
+
+# Configuración del scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(keep_alive, 'interval', minutes=30)
+scheduler.start()
