@@ -2,45 +2,43 @@ import streamlit as st
 import requests
 import json
 
-# Título de la aplicación
+def realizar_investigacion(tema):
+    url = 'https://v2-api.respell.ai/spells/start'
+    headers = {
+        'Accept': 'application/json',
+        'x-api-key': 'clxf3u99q003qweu1gn4o8321',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "spellId": "clzbq6xio01gwvv0ih1vejqb4",
+        "wait": "true",
+        "inputs": {
+            "research_topic": tema
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
 st.title("Agente Investigador")
 
-# Instrucciones
-st.write("Ingrese un tema de investigación y obtenga información relevante.")
+tema_investigacion = st.text_input("Ingrese el tema que desea investigar:")
 
-# Input del usuario
-research_topic = st.text_input("Tema de Investigación")
-
-# Botón para iniciar la búsqueda
-if st.button("Buscar"):
-    if research_topic:
-        # Configurar la solicitud a la API
-        url = 'https://v2-api.respell.ai/spells/start'
-        headers = {
-            'Accept': 'application/json',
-            'x-api-key': 'clxf3u99q003qweu1gn4o8321',
-            'Content-Type': 'application/json'
-        }
-        data = {
-            "spellId": "clzbq6xio01gwvv0ih1vejqb4",
-            "wait": "true",
-            "inputs": {
-                "research_topic": research_topic
-            }
-        }
-
-        # Enviar la solicitud
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-
-        # Procesar la respuesta
-        if response.status_code == 200:
-            result = response.json()
-            st.write("Resultados de la investigación:")
-            st.json(result)
+if st.button("Investigar"):
+    if tema_investigacion:
+        with st.spinner("Investigando..."):
+            resultado = realizar_investigacion(tema_investigacion)
+        
+        if resultado:
+            st.success("Investigación completada")
+            st.json(resultado)
         else:
-            st.error(f"Error en la solicitud: {response.status_code}")
+            st.error("Hubo un error al realizar la investigación. Por favor, intente nuevamente.")
     else:
-        st.warning("Por favor, ingrese un tema de investigación.")
+        st.warning("Por favor, ingrese un tema para investigar.")
 
-# Ejecutar la aplicación de Streamlit con el siguiente comando en la terminal:
-# streamlit run agente_investigador.py
+st.sidebar.header("Acerca de")
+st.sidebar.info("Esta aplicación utiliza la API de Respell.ai para realizar investigaciones sobre temas específicos.")
